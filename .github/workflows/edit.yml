@@ -1,0 +1,79 @@
+name: edit
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_id:
+        description: Google Drive file ID of the raw clip (shared "anyone with the link")
+        required: true
+      name:
+        description: Output name, e.g. IMG_0480
+        required: true
+      hook:
+        description: Hook text (blank = first sentence)
+        required: false
+        default: ""
+      music_id:
+        description: Optional Drive file ID of a music track
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: renders
+  cancel-in-progress: false
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - run: pip install -r requirements.txt
+
+      - name: Cache whisper model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-small-v1
+
+      - name: Download clip
+        run: |
+          ./fetch.sh "${{ inputs.file_id }}" "input/${{ inputs.name }}.mov"
+          if [ -n "${{ inputs.music_id }}" ]; then ./fetch.sh "${{ inputs.music_id }}" Assets/music/track.mp3; fi
+
+      - name: Edit
+        env:
+          HOOK: ${{ inputs.hook }}
+          NAME: ${{ inputs.name }}
+        run: |
+          args=()
+          if [ -n "$HOOK" ]; then args+=(--hook "$HOOK"); fi
+          python edit.py "input/$NAME.mov" "${args[@]}"
+
+      - name: Save render to the renders branch
+        env:
+          NAME: ${{ inputs.name }}
+        run: |
+          mkdir -p /tmp/out && cp output/* /tmp/out/
+          git config user.name "jcube-editor"
+          git config user.email "actions@users.noreply.github.com"
+          for i in 1 2 3 4; do
+            git fetch -q origin renders && git checkout -q -B renders origin/renders || { git checkout -q --orphan renders && git rm -rqf .; }
+            git clean -fdqx
+            mkdir -p "renders/$NAME" && cp /tmp/out/* "renders/$NAME/"
+            git add renders && git commit -qm "render $NAME" && git push -q origin renders && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

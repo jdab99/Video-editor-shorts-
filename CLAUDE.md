@@ -16,4 +16,6 @@ When asked to edit:
 4. Look at a few frames to check captions and hook, then send `output/<name>_edit.mp4` with SendUserFile.
 5. Keep replies short. Jesse is on his phone.
 
-Needs network access to huggingface.co, drive.google.com, drive.usercontent.google.com.
+If this session's network blocks huggingface.co / drive.usercontent.google.com, render on GitHub Actions instead:
+trigger workflow `edit.yml` (inputs file_id, name, hook) via the GitHub MCP, wait for it, then
+`git fetch origin renders` and send `renders/<name>/<name>_edit.mp4` from that branch with SendUserFile.

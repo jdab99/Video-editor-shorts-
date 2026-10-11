@@ -84,7 +84,9 @@ def probe(path):
     a = next((s for s in info["streams"] if s["codec_type"] == "audio"), None)
     if not v or not a:
         sys.exit("input needs both a video and an audio track")
-    return float(info["format"]["duration"])
+    # iPhones shoot HLG / Dolby Vision HDR by default, which looks grey if not tonemapped
+    hdr = v.get("color_transfer") in ("arib-std-b67", "smpte2084")
+    return float(info["format"]["duration"]), hdr
 
 
 # ---------------------------------------------------------------- transcription
@@ -404,7 +406,7 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix="jcube_"))
 
-    duration = probe(src)
+    duration, hdr = probe(src)
     words = transcribe(src, args.model, out.with_suffix(".words.json"))
 
     print("[2/5] planning cuts")
@@ -444,8 +446,10 @@ def main():
                  f"[b]scale={W}:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2")
     else:
         frame = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
+    tonemap = ("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,"
+               "zscale=t=bt709:m=bt709:r=tv,format=yuv420p," if hdr else "")
     graph = (
-        f"[0:v]fps={FPS},select='{sel}',setpts=N/FRAME_RATE/TB,{frame},setsar=1,"
+        f"[0:v]{tonemap}fps={FPS},select='{sel}',setpts=N/FRAME_RATE/TB,{frame},setsar=1,"
         f"zoompan=z='{zexpr}':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H}:fps={FPS}[v];"
         f"[0:a]aresample=48000,aselect='{asel}',asetpts=N/SR/TB[a]"
     )
