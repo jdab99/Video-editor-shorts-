@@ -98,10 +98,19 @@ def transcribe(src, model_name, cache):
     print(f"[1/5] transcribing with whisper '{model_name}' (first run downloads the model)")
     from faster_whisper import WhisperModel
 
+    import numpy as np
+
+    # decode with ffmpeg rather than faster-whisper's PyAV loader, which breaks across av versions
+    pcm = subprocess.run(
+        ["ffmpeg", "-v", "error", "-i", str(src), "-vn", "-ac", "1", "-ar", "16000", "-f", "s16le", "-"],
+        capture_output=True, check=True,
+    ).stdout
+    audio = np.frombuffer(pcm, np.int16).astype(np.float32) / 32768.0
+
     model = WhisperModel(model_name, device="auto", compute_type="int8")
     # This prompt nudges whisper into writing out fillers instead of silently dropping them
     segments, _ = model.transcribe(
-        str(src),
+        audio,
         language="en",
         word_timestamps=True,
         vad_filter=False,
