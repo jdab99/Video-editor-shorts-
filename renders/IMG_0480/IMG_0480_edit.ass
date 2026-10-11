@@ -1,0 +1,17 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Caption,DM Sans ExtraBold,92,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,1,7,4,2,80,80,518,1
+Style: Hook,DM Sans ExtraBold,116,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,-1,0,0,0,100,100,2,-2,1,9,5,8,70,70,307,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 2,0:00:00.00,0:00:01.63,Hook,,0,0,0,,{\fad(0,200)\fscx40\fscy40\t(0,180,\fscx112\fscy112)\t(180,300,\fscx100\fscy100)}THIS?
+Dialogue: 1,0:00:00.00,0:00:00.42,Caption,,0,0,0,,{\fad(100,80)\fscx68\fscy68\t(0,120,\fscx80\fscy80)}THIS?
+Dialogue: 1,0:00:00.42,0:00:01.63,Caption,,0,0,0,,{\fad(100,80)\fscx68\fscy68\t(0,120,\fscx80\fscy80)}I {\fs105}COULD{\fs92} TAKE ON

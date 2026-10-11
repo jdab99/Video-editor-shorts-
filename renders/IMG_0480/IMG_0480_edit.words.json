@@ -1,0 +1,27 @@
+[
+ {
+  "word": "This?",
+  "start": 0.0,
+  "end": 0.2
+ },
+ {
+  "word": "I",
+  "start": 0.42,
+  "end": 0.48
+ },
+ {
+  "word": "could",
+  "start": 0.48,
+  "end": 0.64
+ },
+ {
+  "word": "take",
+  "start": 0.64,
+  "end": 0.84
+ },
+ {
+  "word": "on...",
+  "start": 0.84,
+  "end": 1.52
+ }
+]
